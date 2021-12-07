@@ -1,7 +1,7 @@
 import XCTest
 
-import TransmissionTests
+import TransmissionMacOSTests
 
 var tests = [XCTestCaseEntry]()
-tests += TransmissionTests.allTests()
+tests += TransmissionMacOSTests.allTests()
 XCTMain(tests)
