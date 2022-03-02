@@ -19,6 +19,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
     let log: Logger?
     let states: BlockingQueue<Bool> = BlockingQueue<Bool>()
     let startQueue = DispatchQueue(label: "TransmissionConnection")
+    let connectionType: ConnectionType
 
     public required init?(host: String, port: Int, type: ConnectionType = .tcp, logger: Logger? = nil)
     {
@@ -26,6 +27,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
         let nwhost = NWEndpoint.Host(host)
         let port16 = UInt16(port)
         let nwport = NWEndpoint.Port(integerLiteral: port16)
+        self.connectionType = type
         self.log = logger
 
         switch type
@@ -52,6 +54,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
     public required init?(transport: Transport.Connection, logger: Logger? = nil)
     {
         self.log = logger
+        self.connectionType = .tcp // FIXME - support UDP
         maybeLog(message: "Initializing Transmission connection", logger: self.log)
 
         self.connection = transport
@@ -309,7 +312,10 @@ public class TransmissionConnection: TransmissionTypes.Connection
         var success = false
 
         self.writeLock.enter()
-        self.connection.send(content: data, contentContext: NWConnection.ContentContext.defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
+
+        let complete = self.connectionType == .udp
+
+        self.connection.send(content: data, contentContext: NWConnection.ContentContext.defaultMessage, isComplete: complete, completion: NWConnection.SendCompletion.contentProcessed(
             {
                 (maybeError) in
 
