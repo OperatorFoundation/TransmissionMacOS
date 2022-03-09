@@ -401,6 +401,11 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
         return success
     }
+
+    public func close()
+    {
+        self.connection.cancel()
+    }
 }
 
 public func maybeLog(message: String, logger: Logger? = nil) {
