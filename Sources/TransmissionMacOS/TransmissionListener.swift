@@ -51,6 +51,11 @@ public class TransmissionListener: Listener
     {
         return self.queue.dequeue()
     }
+
+    public func close()
+    {
+        self.listener.cancel()
+    }
 }
 
 #endif
