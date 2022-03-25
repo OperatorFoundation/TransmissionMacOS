@@ -193,6 +193,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                     guard maybeError == nil else
                     {
                         countLock.leave()
+                        self.readLock.leave()
                         return
                     }
 
@@ -213,6 +214,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                     guard maybeError == nil else
                     {
                         countLock.leave()
+                        self.readLock.leave()
                         return
                     }
 
@@ -233,6 +235,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                     guard maybeError == nil else
                     {
                         countLock.leave()
+                        self.readLock.leave()
                         return
                     }
 
@@ -253,6 +256,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                     guard maybeError == nil else
                     {
                         countLock.leave()
+                        self.readLock.leave()
                         return
                     }
 
@@ -267,13 +271,15 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 }
             default:
                 countLock.leave()
+                self.readLock.leave()
+                return nil
         }
 
         countLock.wait()
 
         guard let size = maybeCount else
         {
-            readLock.leave()
+            self.readLock.leave()
             return nil
         }
 
@@ -295,7 +301,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
             self.readLock.leave()
         }
 
-        readLock.wait()
+        self.readLock.wait()
 
         return result
     }
