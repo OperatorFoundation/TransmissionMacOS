@@ -181,8 +181,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
         var maybeCount: Int? = nil
 
-        let countLock = DispatchGroup()
-        countLock.enter()
+        let countLock = DispatchSemaphore(value: 0)
         switch prefixSizeInBits
         {
             case 8:
@@ -192,7 +191,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
                     guard maybeError == nil else
                     {
-                        countLock.leave()
+                        countLock.signal()
                         self.readLock.leave()
                         return
                     }
@@ -204,7 +203,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                             maybeCount = Int(count)
                         }
                     }
-                    countLock.leave()
+                    countLock.signal()
                 }
             case 16:
                 self.connection.receive(minimumIncompleteLength: 2, maximumLength: 2)
@@ -213,7 +212,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
                     guard maybeError == nil else
                     {
-                        countLock.leave()
+                        countLock.signal()
                         self.readLock.leave()
                         return
                     }
@@ -225,7 +224,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                             maybeCount = Int(count)
                         }
                     }
-                    countLock.leave()
+                    countLock.signal()
                 }
             case 32:
                 self.connection.receive(minimumIncompleteLength: 4, maximumLength: 4)
@@ -234,7 +233,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
                     guard maybeError == nil else
                     {
-                        countLock.leave()
+                        countLock.signal()
                         self.readLock.leave()
                         return
                     }
@@ -246,7 +245,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                             maybeCount = Int(count)
                         }
                     }
-                    countLock.leave()
+                    countLock.signal()
                 }
             case 64:
                 self.connection.receive(minimumIncompleteLength: 8, maximumLength: 8)
@@ -255,7 +254,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
                     guard maybeError == nil else
                     {
-                        countLock.leave()
+                        countLock.signal()
                         self.readLock.leave()
                         return
                     }
@@ -267,10 +266,10 @@ public class TransmissionConnection: TransmissionTypes.Connection
                             maybeCount = Int(count)
                         }
                     }
-                    countLock.leave()
+                    countLock.signal()
                 }
             default:
-                countLock.leave()
+                countLock.signal()
                 self.readLock.leave()
                 return nil
         }
