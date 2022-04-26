@@ -345,6 +345,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
     public func writeWithLengthPrefix(data: Data, prefixSizeInBits: Int) -> Bool
     {
+        print("TransmissionMacOS.writeWithLengthPrefix() called.")
         var maybeCountData: Data? = nil
 
         switch prefixSizeInBits
@@ -362,10 +363,15 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 let count = UInt64(data.count)
                 maybeCountData = count.maybeNetworkData
             default:
+                print("TransmissionMacOS.writeWithLengthPrefix: Error - Unsupported prefix size: \(prefixSizeInBits)")
                 return false
         }
 
-        guard let countData = maybeCountData else {return false}
+        guard let countData = maybeCountData else
+        {
+            print("TransmissionMacOS.writeWithLengthPrefix: Error - unable to parse count data")
+            return false
+        }
 
         maybeLog(message: "Transmission writeWithLengthPrefix called \(Thread.current)", logger: self.log)
         var success = false
@@ -379,6 +385,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 guard maybeError == nil else
                 {
                     success = false
+                    print("TransmissionMacOS.writeWithLengthPrefix: Error sending count data - \(maybeError!)")
                     self.writeLock.leave()
                     return
                 }
@@ -390,6 +397,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                         guard maybeError == nil else
                         {
                             success = false
+                            print("TransmissionMacOS.writeWithLengthPrefix: Error sending content data - \(maybeError!)")
                             self.writeLock.leave()
                             return
                         }
@@ -403,6 +411,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
         self.writeLock.wait()
 
         maybeLog(message: "Transmission writeWithLengthPrefix finished \(Thread.current)", logger: self.log)
+        print("Transmission writeWithLengthPrefix finished \(Thread.current)")
 
         return success
     }
