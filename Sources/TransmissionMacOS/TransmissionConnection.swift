@@ -55,8 +55,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
     {
         self.log = logger
         self.connectionType = .tcp // FIXME - support UDP
-        maybeLog(message: "Initializing Transmission connection", logger: self.log)
-
         self.connection = transport
         self.connection.stateUpdateHandler = self.handleState
         self.connection.start(queue: .global())
@@ -99,16 +97,12 @@ public class TransmissionConnection: TransmissionTypes.Connection
     // Reads exactly size bytes
     public func read(size: Int) -> Data?
     {
-        maybeLog(message: "Transmission read(size:) called \(Thread.current)", logger: self.log)
         var result: Data?
 
         self.readLock.enter()
-        maybeLog(message: "Transmission read's connection.receive type: \(type(of: self.connection)) size: \(size)", logger: self.log)
         self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
         {
             (maybeData, maybeContext, isComplete, maybeError) in
-
-            maybeLog(message: "entered Transmission read's receive callback", logger: self.log)
 
             guard maybeError == nil else
             {
@@ -122,14 +116,10 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 result = data
             }
 
-            maybeLog(message: "leaving Transmission read's receive callback", logger: self.log)
-
             self.readLock.leave()
         }
 
         readLock.wait()
-
-        maybeLog(message: "Transmission read finished!", logger: self.log)
 
         return result
     }
@@ -137,16 +127,12 @@ public class TransmissionConnection: TransmissionTypes.Connection
     // reads up to maxSize bytes
     public func read(maxSize: Int) -> Data?
     {
-        maybeLog(message: "Transmission read(maxSize:) called \(Thread.current)", logger: self.log)
         var result: Data?
 
         self.readLock.enter()
-        maybeLog(message: "Transmission read's connection.receive type: \(type(of: self.connection)) maxSize: \(maxSize)", logger: self.log)
         self.connection.receive(minimumIncompleteLength: 1, maximumLength: maxSize)
         {
             (maybeData, maybeContext, isComplete, maybeError) in
-
-            maybeLog(message: "entered Transmission read's receive callback", logger: self.log)
 
             guard maybeError == nil else
             {
@@ -160,21 +146,16 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 result = data
             }
 
-            maybeLog(message: "leaving Transmission read's receive callback", logger: self.log)
-
             self.readLock.leave()
         }
 
         readLock.wait()
-
-        maybeLog(message: "Transmission read finished!", logger: self.log)
 
         return result
     }
 
     public func readWithLengthPrefix(prefixSizeInBits: Int) -> Data?
     {
-        maybeLog(message: "Transmission readWithLengthPrefix called \(Thread.current)", logger: self.log)
         var result: Data?
 
         self.readLock.enter()
@@ -313,7 +294,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
     public func write(data: Data) -> Bool
     {
-        maybeLog(message: "Transmission write called \(Thread.current)", logger: self.log)
         var success = false
 
         self.writeLock.enter()
@@ -338,14 +318,11 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
         self.writeLock.wait()
 
-        maybeLog(message: "Transmission write finished \(Thread.current)", logger: self.log)
-
         return success
     }
 
     public func writeWithLengthPrefix(data: Data, prefixSizeInBits: Int) -> Bool
     {
-        print("TransmissionMacOS.writeWithLengthPrefix() called.")
         var maybeCountData: Data? = nil
 
         switch prefixSizeInBits
@@ -373,7 +350,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
             return false
         }
 
-        maybeLog(message: "Transmission writeWithLengthPrefix called \(Thread.current)", logger: self.log)
         var success = false
 
         self.writeLock.enter()
@@ -409,9 +385,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
             }))
 
         self.writeLock.wait()
-
-        maybeLog(message: "Transmission writeWithLengthPrefix finished \(Thread.current)", logger: self.log)
-        print("Transmission writeWithLengthPrefix finished \(Thread.current)")
 
         return success
     }
