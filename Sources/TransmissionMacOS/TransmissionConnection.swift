@@ -71,14 +71,17 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 self.states.enqueue(element: true)
                 return
             case .cancelled:
+                print("** connection cancelled **")
                 self.states.enqueue(element: false)
                 self.failConnect()
                 return
-            case .failed(_):
+            case .failed(let error):
+                print(error)
                 self.states.enqueue(element: false)
                 self.failConnect()
                 return
-            case .waiting(_):
+            case .waiting(let error):
+                print(error)
                 self.states.enqueue(element: false)
                 self.failConnect()
                 return
