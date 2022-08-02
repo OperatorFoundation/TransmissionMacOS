@@ -206,6 +206,9 @@ public class TransmissionConnection: TransmissionTypes.Connection
                         if let count = data.maybeNetworkUint16
                         {
                             maybeCount = Int(count)
+                            
+                            print("Read a 2 byte length data: \(data.hex)")
+                            print("Interpreted length: \(maybeCount)")
                         }
                     }
                     countLock.signal()
@@ -265,7 +268,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
             self.readLock.leave()
             return nil
         }
-
+        
         self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
         {
             (maybeData, maybeContext, isComplete, maybeError) in
