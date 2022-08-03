@@ -210,7 +210,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
                             maybeCount = Int(count)
                             
                             print("Read a 2 byte length data: \(data.hex)")
-                            print("Interpreted length: \(maybeCount)")
+                            print("Interpreted length: \(String(describing: maybeCount))")
                         }
                     }
                     countLock.signal()
