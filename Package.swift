@@ -18,10 +18,11 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/OperatorFoundation/TransmissionTypes.git", branch: "main"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
         .package(url: "https://github.com/OperatorFoundation/Chord", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Datable", branch: "main"),
+        .package(url: "https://github.com/OperatorFoundation/SwiftHexTools", branch: "main"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
+        .package(url: "https://github.com/OperatorFoundation/TransmissionTypes.git", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Transport", branch: "main"),
     ],
     targets: [
@@ -29,7 +30,14 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "TransmissionMacOS",
-            dependencies: ["TransmissionTypes", "Chord", "Datable", "Transport", .product(name: "Logging", package: "swift-log")]
+            dependencies: [
+                "Chord",
+                "Datable",
+                .product(name: "Logging", package: "swift-log"),
+                "SwiftHexTools",
+                "Transport",
+                "TransmissionTypes",
+            ]
         ),
         .testTarget(
             name: "TransmissionMacOSTests",
