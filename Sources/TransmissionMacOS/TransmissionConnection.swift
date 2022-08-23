@@ -118,14 +118,22 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
             if let data = maybeData
             {
-                result = data
+                if data.count == size
+                {
+                    self.log?.debug("Read request for size \(size), but we only received \(data.count) bytes.")
+                    result = nil
+                }
+                else
+                {
+                    result = data
+                }
             }
-
+            
             self.readLock.leave()
         }
 
         readLock.wait()
-
+        
         return result
     }
 
