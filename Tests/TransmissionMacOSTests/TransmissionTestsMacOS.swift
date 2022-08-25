@@ -19,8 +19,7 @@ final class TransmissionMacOSTests: XCTestCase
         }
         
         lock.wait()
-        
-        runClient()
+        XCTAssertTrue(runClient())
     }
     
     func runServer(_ lock: DispatchGroup)
@@ -33,18 +32,15 @@ final class TransmissionMacOSTests: XCTestCase
         let _ = connection.write(string: "back")
     }
     
-    func runClient()
+    func runClient() -> Bool
     {
         let connection = TransmissionConnection(host: "127.0.0.1", port: 1234, logger: nil)
-        XCTAssertNotNil(connection)
-        
-        let writeResult = connection!.write(string: "test")
-        XCTAssertTrue(writeResult)
-        
+        let writeSuccess = connection!.write(string: "test")
         let result = connection!.read(size: 4)
-        XCTAssertNotNil(result)
         
-        XCTAssertEqual(result!, "back")
+        connection?.close()
+        
+        return (result == "back" && writeSuccess)
     }
 
     public func testUDP()
@@ -60,6 +56,8 @@ final class TransmissionMacOSTests: XCTestCase
             XCTFail()
             return
         }
+        
+        connection.close()
     }
 
     public func testUDPNetwork()

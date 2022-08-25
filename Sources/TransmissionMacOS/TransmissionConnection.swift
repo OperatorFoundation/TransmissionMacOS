@@ -14,14 +14,17 @@ import Network
 
 public class TransmissionConnection: TransmissionTypes.Connection
 {
-    var connection: Transport.Connection
-    var connectLock = DispatchGroup()
-    var readLock = DispatchGroup()
-    var writeLock = DispatchGroup()
     let log: Logger?
     let states: BlockingQueue<Bool> = BlockingQueue<Bool>()
     let startQueue = DispatchQueue(label: "TransmissionConnection")
     let connectionType: ConnectionType
+    
+    var connection: Transport.Connection
+    var connectionClosed = false
+    
+    var connectLock = DispatchGroup()
+    var readLock = DispatchGroup()
+    var writeLock = DispatchGroup()
 
     public required init?(host: String, port: Int, type: ConnectionType = .tcp, logger: Logger? = nil)
     {
@@ -73,9 +76,8 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 self.states.enqueue(element: true)
                 return
             case .cancelled:
-                print("** connection cancelled **")
                 self.states.enqueue(element: false)
-                self.failConnect()
+                self.close()
                 return
             case .failed(let error):
                 print(error)
@@ -85,7 +87,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
             case .waiting(let error):
                 print(error)
                 self.states.enqueue(element: false)
-                self.failConnect()
+                self.close()
                 return
             default:
                 return
@@ -94,9 +96,23 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
     func failConnect()
     {
-        maybeLog(message: "Failed to make a Transmission connection", logger: self.log)
-        self.connection.stateUpdateHandler = nil
-        self.connection.cancel()
+        self.log?.debug("TransmissionMacOS: TransmissionConnection received a failed state. Closing connection.")
+        close()
+    }
+    
+    public func close()
+    {
+        if !connectionClosed
+        {
+            self.log?.debug("TransmissionMacOS: TransmissionConnection is closing the connection")
+            self.connectionClosed = true
+            self.connection.cancel()
+            self.connection.stateUpdateHandler = nil
+        }
+        else
+        {
+            self.log?.debug("TransmissionMacOS: TransmissionConnection close requested, but the connection is already closed.")
+        }
     }
 
     // Reads exactly size bytes
@@ -403,11 +419,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
         self.writeLock.wait()
 
         return success
-    }
-
-    public func close()
-    {
-        self.connection.cancel()
     }
 }
 
