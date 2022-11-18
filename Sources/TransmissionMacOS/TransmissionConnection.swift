@@ -2,7 +2,7 @@ import Foundation
 
 import Chord
 import Datable
-import Logging
+import os.log
 import SwiftHexTools
 import SwiftQueue
 import TransmissionTypes
@@ -127,7 +127,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
             guard maybeError == nil else
             {
-                maybeLog(message: "leaving Transmission read's receive callback with error: \(String(describing: maybeError))", logger: self.log)
+                self.log?.error("leaving Transmission read's receive callback with error: \(String(describing: maybeError), privacy: .public)")
                 self.readLock.leave()
                 return
             }
@@ -165,7 +165,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
             guard maybeError == nil else
             {
-                maybeLog(message: "leaving Transmission read's receive callback with error: \(String(describing: maybeError))", logger: self.log)
+                self.log?.error("leaving Transmission read's receive callback with error: \(String(describing: maybeError), privacy: .public)")
                 self.readLock.leave()
                 return
             }
@@ -419,14 +419,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
         self.writeLock.wait()
 
         return success
-    }
-}
-
-public func maybeLog(message: String, logger: Logger? = nil) {
-    if logger != nil {
-        logger!.debug("\(message)")
-    } else {
-        print(message)
     }
 }
 
