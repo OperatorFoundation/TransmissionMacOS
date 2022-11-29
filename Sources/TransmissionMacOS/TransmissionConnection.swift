@@ -156,66 +156,40 @@ public class TransmissionConnection: TransmissionTypes.Connection
     
     public func unsafeRead(size: Int) -> Data? {
         if size == 0
-                {
-                    log?.error("TransmissionLinux: requested read size was zero")
-                    return nil
-                }
-
-                if size <= buffer.count
-                {
-                    let result = Data(buffer[0..<size])
-                    buffer = Data(buffer[size..<buffer.count])
-                    log?.debug("TransmissionLinux: TransmissionConnection.read(size: \(size)) -> returned \(result.count) bytes.")
-                    return result
-                }
-
-                guard let data = read(size: size) else
-                {
-                    return nil
-                }
-                
-                guard data.count > 0 else
-                {
-                    return nil
-                }
-
-                buffer.append(data)
-
-                guard size <= buffer.count else
-                {
-                    return nil
-                }
-
-                let result = Data(buffer[0..<size])
-                buffer = Data(buffer[size..<buffer.count])
-                log?.debug("TransmissionLinux: TransmissionConnection.read(size: \(size)) -> returned \(result.count) bytes.")
-                
-                return result
-    }
-
-    public func unsafeRead(size: Int) -> Data?
-    {
-        var result: Data?
-
-        self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
         {
-            (maybeData, maybeContext, isComplete, maybeError) in
-
-            guard maybeError == nil else
-            {
-                maybeLog(message: "leaving Transmission read's receive callback with error: \(String(describing: maybeError))", logger: self.log)
-                self.readLock.leave()
-                return
-            }
-
-            if let data = maybeData
-            {
-                result = data
-            }
-
-            self.readLock.leave()
+            log?.error("TransmissionLinux: requested read size was zero")
+            return nil
         }
 
+        if size <= buffer.count
+        {
+            let result = Data(buffer[0..<size])
+            buffer = Data(buffer[size..<buffer.count])
+            log?.debug("TransmissionLinux: TransmissionConnection.read(size: \(size)) -> returned \(result.count) bytes.")
+            return result
+        }
+
+        guard let data = read(size: size) else
+        {
+            return nil
+        }
+        
+        guard data.count > 0 else
+        {
+            return nil
+        }
+
+        buffer.append(data)
+
+        guard size <= buffer.count else
+        {
+            return nil
+        }
+
+        let result = Data(buffer[0..<size])
+        buffer = Data(buffer[size..<buffer.count])
+        log?.debug("TransmissionLinux: TransmissionConnection.read(size: \(size)) -> returned \(result.count) bytes.")
+        
         return result
     }
 
