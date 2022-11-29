@@ -8,7 +8,7 @@
 
 import Foundation
 import Chord
-import Logging
+import os.log
 import Net
 import TransmissionTypes
 

@@ -6,7 +6,7 @@ import PackageDescription
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
 let package = Package(
     name: "TransmissionMacOS",
-    platforms: [.macOS(.v10_15),
+    platforms: [.macOS(.v12),
                        .iOS(.v15)
                     ],
     products: [

@@ -2,7 +2,7 @@ import Foundation
 
 import Chord
 import Datable
-import Logging
+import os.log
 import SwiftHexTools
 import SwiftQueue
 import TransmissionTypes
@@ -14,14 +14,18 @@ import Network
 
 public class TransmissionConnection: TransmissionTypes.Connection
 {
-    var connection: Transport.Connection
-    var connectLock = DispatchGroup()
-    var readLock = DispatchGroup()
-    var writeLock = DispatchGroup()
+    var buffer: Data = Data()
     let log: Logger?
     let states: BlockingQueue<Bool> = BlockingQueue<Bool>()
     let startQueue = DispatchQueue(label: "TransmissionConnection")
     let connectionType: ConnectionType
+    
+    var connection: Transport.Connection
+    var connectionClosed = false
+    
+    var connectLock = DispatchGroup()
+    var readLock = DispatchGroup()
+    var writeLock = DispatchGroup()
 
     public required init?(host: String, port: Int, type: ConnectionType = .tcp, logger: Logger? = nil)
     {
@@ -73,9 +77,8 @@ public class TransmissionConnection: TransmissionTypes.Connection
                 self.states.enqueue(element: true)
                 return
             case .cancelled:
-                print("** connection cancelled **")
                 self.states.enqueue(element: false)
-                self.failConnect()
+                self.close()
                 return
             case .failed(let error):
                 print(error)
@@ -85,7 +88,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
             case .waiting(let error):
                 print(error)
                 self.states.enqueue(element: false)
-                self.failConnect()
+                self.close()
                 return
             default:
                 return
@@ -94,9 +97,23 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
     func failConnect()
     {
-        maybeLog(message: "Failed to make a Transmission connection", logger: self.log)
-        self.connection.stateUpdateHandler = nil
-        self.connection.cancel()
+        self.log?.debug("TransmissionMacOS: TransmissionConnection received a failed state. Closing connection.")
+        close()
+    }
+    
+    public func close()
+    {
+        if !connectionClosed
+        {
+            self.log?.debug("TransmissionMacOS: TransmissionConnection is closing the connection")
+            self.connectionClosed = true
+            self.connection.cancel()
+            self.connection.stateUpdateHandler = nil
+        }
+        else
+        {
+            self.log?.debug("TransmissionMacOS: TransmissionConnection close requested, but the connection is already closed.")
+        }
     }
 
     // Reads exactly size bytes
@@ -111,22 +128,69 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
             guard maybeError == nil else
             {
-                maybeLog(message: "leaving Transmission read's receive callback with error: \(String(describing: maybeError))", logger: self.log)
+                self.log?.error("leaving Transmission read's receive callback with error: \(String(describing: maybeError), privacy: .public)")
                 self.readLock.leave()
                 return
             }
 
             if let data = maybeData
             {
-                result = data
+                if data.count == size
+                {
+                    result = data
+                }
+                else
+                {
+                    self.log?.debug("Read request for size \(size), but we only received \(data.count) bytes.")
+                    result = nil
+                }
             }
-
+            
             self.readLock.leave()
         }
 
         readLock.wait()
-
+        
         return result
+    }
+    
+    public func unsafeRead(size: Int) -> Data? {
+        if size == 0
+                {
+                    log?.error("TransmissionLinux: requested read size was zero")
+                    return nil
+                }
+
+                if size <= buffer.count
+                {
+                    let result = Data(buffer[0..<size])
+                    buffer = Data(buffer[size..<buffer.count])
+                    log?.debug("TransmissionLinux: TransmissionConnection.read(size: \(size)) -> returned \(result.count) bytes.")
+                    return result
+                }
+
+                guard let data = read(size: size) else
+                {
+                    return nil
+                }
+                
+                guard data.count > 0 else
+                {
+                    return nil
+                }
+
+                buffer.append(data)
+
+                guard size <= buffer.count else
+                {
+                    return nil
+                }
+
+                let result = Data(buffer[0..<size])
+                buffer = Data(buffer[size..<buffer.count])
+                log?.debug("TransmissionLinux: TransmissionConnection.read(size: \(size)) -> returned \(result.count) bytes.")
+                
+                return result
     }
 
     public func unsafeRead(size: Int) -> Data?
@@ -167,7 +231,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
             guard maybeError == nil else
             {
-                maybeLog(message: "leaving Transmission read's receive callback with error: \(String(describing: maybeError))", logger: self.log)
+                self.log?.error("leaving Transmission read's receive callback with error: \(String(describing: maybeError), privacy: .public)")
                 self.readLock.leave()
                 return
             }
@@ -421,19 +485,6 @@ public class TransmissionConnection: TransmissionTypes.Connection
         self.writeLock.wait()
 
         return success
-    }
-
-    public func close()
-    {
-        self.connection.cancel()
-    }
-}
-
-public func maybeLog(message: String, logger: Logger? = nil) {
-    if logger != nil {
-        logger!.debug("\(message)")
-    } else {
-        print(message)
     }
 }
 
