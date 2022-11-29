@@ -129,6 +129,32 @@ public class TransmissionConnection: TransmissionTypes.Connection
         return result
     }
 
+    public func unsafeRead(size: Int) -> Data?
+    {
+        var result: Data?
+
+        self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
+        {
+            (maybeData, maybeContext, isComplete, maybeError) in
+
+            guard maybeError == nil else
+            {
+                maybeLog(message: "leaving Transmission read's receive callback with error: \(String(describing: maybeError))", logger: self.log)
+                self.readLock.leave()
+                return
+            }
+
+            if let data = maybeData
+            {
+                result = data
+            }
+
+            self.readLock.leave()
+        }
+
+        return result
+    }
+
     // reads up to maxSize bytes
     public func read(maxSize: Int) -> Data?
     {
