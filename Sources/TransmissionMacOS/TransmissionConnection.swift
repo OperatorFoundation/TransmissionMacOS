@@ -347,22 +347,10 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
             if let data = maybeData
             {
-                guard let bytes = data.array(of: UInt8.self) else
-                {
-                    self.readLock.leave()
-                    return
-                }
-                
-                let dataSize = bytes.count
+                let dataSize = data.count
                 var bytesCopy = [UInt8](repeating: 0x1a, count: dataSize)
-                
-                // Make sure we get to keep our data
-                withUnsafeMutableBytes(of: &bytesCopy)
-                {
-                    bytesCopyPointer in
-                    
-                    bytesCopyPointer.copyBytes(from: bytes)                    
-                }
+
+                data.copyBytes(to: &bytesCopy, count: dataSize)
                 
                 result = Data(array: bytesCopy)
             }
