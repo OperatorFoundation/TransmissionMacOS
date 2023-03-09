@@ -431,7 +431,7 @@ public class TransmissionConnection: TransmissionTypes.Connection
 
         self.writeLock.enter()
 
-        self.connection.send(content: countData, contentContext: NWConnection.ContentContext.defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
+        self.connection.send(content: countData + data, contentContext: NWConnection.ContentContext.defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
             {
                 (maybeError) in
 
@@ -442,23 +442,9 @@ public class TransmissionConnection: TransmissionTypes.Connection
                     self.writeLock.leave()
                     return
                 }
-
-                self.connection.send(content: data, contentContext: NWConnection.ContentContext.defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
-                    {
-                        (maybeError) in
-
-                        guard maybeError == nil else
-                        {
-                            success = false
-                            print("TransmissionMacOS.writeWithLengthPrefix: Error sending content data - \(maybeError!)")
-                            self.writeLock.leave()
-                            return
-                        }
-
-                        success = true
-                        self.writeLock.leave()
-                        return
-                    }))
+                
+                success = true
+                self.writeLock.leave()
             }))
 
         self.writeLock.wait()
