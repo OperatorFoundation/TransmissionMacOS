@@ -8,7 +8,11 @@
 
 import Foundation
 import Chord
+#if os(macOS)
 import os.log
+#else
+import Logger
+#endif
 import Net
 import TransmissionTypes
 
@@ -39,7 +43,17 @@ public class TransmissionListener: Listener
         {
             nwconnection in
 
-            guard let connection = TransmissionConnection(transport: nwconnection, logger: logger) else {return}
+            let connection: TransmissionTypes.Connection
+            switch type
+            {
+                case .tcp:
+                    guard let newConnection = TCPConnection(connection: nwconnection, logger: logger) else {return}
+                    connection = newConnection
+
+                case .udp:
+                    guard let newConnection = UDPConnection(connection: nwconnection, logger: logger) else {return}
+                    connection = newConnection
+            }
 
             self.queue.enqueue(element: connection)
         }

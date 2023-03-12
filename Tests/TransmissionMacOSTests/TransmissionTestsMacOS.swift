@@ -45,7 +45,7 @@ final class TransmissionMacOSTests: XCTestCase
 
     public func testUDP()
     {
-        guard let connection = TransmissionConnection(host: "127.0.0.1", port: 1234, type: .udp, logger: nil) else
+        guard let connection = UDPConnection(host: "127.0.0.1", port: 1234, logger: nil) else
         {
             XCTFail()
             return

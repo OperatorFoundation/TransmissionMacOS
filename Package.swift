@@ -21,8 +21,9 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/Chord", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Datable", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/SwiftHexTools", branch: "main"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
-        .package(url: "https://github.com/OperatorFoundation/TransmissionTypes.git", branch: "main"),
+        .package(url: "https://github.com/apple/swift-log", from: "1.4.2"),
+        .package(url: "https://github.com/OperatorFoundation/TransmissionBase", branch: "main"),
+        .package(url: "https://github.com/OperatorFoundation/TransmissionTypes", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Transport", branch: "main"),
     ],
     targets: [
@@ -31,11 +32,13 @@ let package = Package(
         .target(
             name: "TransmissionMacOS",
             dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+
                 "Chord",
                 "Datable",
-                .product(name: "Logging", package: "swift-log"),
                 "SwiftHexTools",
                 "Transport",
+                "TransmissionBase",
                 "TransmissionTypes",
             ]
         ),
