@@ -27,6 +27,8 @@ import Network
 
 public class TCPConnection: IPConnection
 {
+    var readLock = DispatchSemaphore(value: 0)
+    
     public override init?(host: String, port: Int, using: ConnectionType = .tcp, logger: Logger? = nil)
     {
         super.init(host: host, port: port, using: using, logger: logger)
@@ -63,6 +65,8 @@ public class TCPConnection: IPConnection
             guard maybeError == nil else
             {
                 print(maybeError!)
+                self.readLock.signal()
+                
                 return
             }
 
@@ -78,7 +82,11 @@ public class TCPConnection: IPConnection
                     result = nil
                 }
             }
+            
+            self.readLock.signal()
         }
+        
+        readLock.wait()
 
         if let result
         {
