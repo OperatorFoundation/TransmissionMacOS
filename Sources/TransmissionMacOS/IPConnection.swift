@@ -55,14 +55,13 @@ public class IPConnection: BaseConnection
         }
         self.connection = nwconnection
         self.connection.start(queue: startQueue)
+        
+        // FIXME
+        super.init(id: 0)
+        self.connection.stateUpdateHandler = self.handleState
 
         let success = self.states.dequeue()
         guard success else {return nil}
-
-        // FIXME
-        super.init(id: 0)
-
-        self.connection.stateUpdateHandler = self.handleState
     }
 
     public init?(connection: NWConnection, connectionType: ConnectionType, logger: Logger? = nil)
