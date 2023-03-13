@@ -11,7 +11,7 @@ import Chord
 #if os(macOS)
 import os.log
 #else
-import Logger
+import Logging
 #endif
 import Net
 import TransmissionTypes
