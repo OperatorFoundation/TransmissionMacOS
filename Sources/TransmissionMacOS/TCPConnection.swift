@@ -27,8 +27,6 @@ import Network
 
 public class TCPConnection: IPConnection
 {
-    var readLock = DispatchSemaphore(value: 0)
-    
     public override init?(host: String, port: Int, using: ConnectionType = .tcp, logger: Logger? = nil)
     {
         super.init(host: host, port: port, using: using, logger: logger)
@@ -57,6 +55,7 @@ public class TCPConnection: IPConnection
     public override func networkRead(size: Int) throws -> Data
     {
         var result: Data?
+        let tcpReadLock = DispatchSemaphore(value: 0)
 
         self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
         {
@@ -65,7 +64,7 @@ public class TCPConnection: IPConnection
             guard maybeError == nil else
             {
                 print(maybeError!)
-                self.readLock.signal()
+                tcpReadLock.signal()
                 
                 return
             }
@@ -83,10 +82,10 @@ public class TCPConnection: IPConnection
                 }
             }
             
-            self.readLock.signal()
+            tcpReadLock.signal()
         }
         
-        readLock.wait()
+        tcpReadLock.wait()
 
         if let result
         {
@@ -104,7 +103,7 @@ public class TCPConnection: IPConnection
         {
             callback in
 
-            self.connection.send(content: data, contentContext: NWConnection.ContentContext.defaultStream, completion: .contentProcessed(callback))
+            self.connection.send(content: data, contentContext: NWConnection.ContentContext.defaultStream, isComplete: false, completion: .contentProcessed(callback))
         }
 
         if let error = maybeError
