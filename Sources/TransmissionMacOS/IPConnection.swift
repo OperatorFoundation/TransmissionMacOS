@@ -56,8 +56,8 @@ public class IPConnection: BaseConnection
         self.connection = nwconnection
         self.connection.start(queue: startQueue)
         
-        // FIXME
-        super.init(id: 0)
+        let newID = UUID()
+        super.init(id: newID.hashValue)
         self.connection.stateUpdateHandler = self.handleState
 
         let success = self.states.dequeue()
@@ -71,8 +71,8 @@ public class IPConnection: BaseConnection
 
         self.connectionType = connectionType
 
-        // FIXME
-        super.init(id: 0, logger: logger)
+        let newID = UUID()
+        super.init(id: newID.hashValue, logger: logger)
     }
 
     func handleState(state: NWConnection.State)
