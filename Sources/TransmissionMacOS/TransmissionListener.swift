@@ -42,7 +42,7 @@ public class TransmissionListener: Listener
         self.listener.newConnectionHandler =
         {
             nwconnection in
-
+            
             let connection: TransmissionTypes.Connection
             switch type
             {

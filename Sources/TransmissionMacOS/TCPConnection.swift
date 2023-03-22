@@ -27,14 +27,19 @@ import Network
 
 public class TCPConnection: IPConnection
 {
-    public override init?(host: String, port: Int, using: ConnectionType = .tcp, logger: Logger? = nil)
+    public init?(host: String, port: Int, logger: Logger? = nil)
     {
-        super.init(host: host, port: port, using: using, logger: logger)
+        let nwhost = NWEndpoint.Host(host)
+        let port16 = UInt16(port)
+        let nwport = NWEndpoint.Port(integerLiteral: port16)
+        let nwconnection = NWConnection(host: nwhost, port: nwport, using: .tcp)
+        
+        super.init(connection: nwconnection, logger: logger)
     }
 
-    public init?(connection: NWConnection, logger: Logger? = nil)
+    public override init?(connection: NWConnection, logger: Logger? = nil)
     {
-        super.init(connection: connection, connectionType: .tcp, logger: logger)
+        super.init(connection: connection, logger: logger)
     }
 
     public override func close()
