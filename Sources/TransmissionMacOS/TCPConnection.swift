@@ -74,9 +74,7 @@ public class TCPConnection: IPConnection
             {
                 tcpReadLock.signal()
             }
-            
-            
-                        
+
             guard maybeError == nil else
             {
                 print("❗️ TransmissionMacOS: networkRead received an error: \(maybeError!)")
@@ -85,14 +83,12 @@ public class TCPConnection: IPConnection
 
             if let data = maybeData
             {
-                if data.count == size
-                {
-                    result = data
-                }
-                else
+                if data.count != size
                 {
                     print("📻 Read request for size \(size), but we only received \(data.count) bytes.")
                 }
+                
+                result = data
             }
         }
         
