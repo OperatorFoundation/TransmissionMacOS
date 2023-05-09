@@ -62,20 +62,17 @@ public class TCPConnection: IPConnection
         var result: Data?
         let tcpReadLock = DispatchSemaphore(value: 0)
         
-        self.log?.debug("\n\nTransmissionMacOS: networkRead(size: \(size) is calling connection.receive...")
+        print("\n\nTransmissionMacOS: networkRead(size: \(size) is calling connection.receive...")
         
         self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
         {
             (maybeData, maybeContext, isComplete, maybeError) in
             
-            self.log?.debug("\n\nTransmissionMacOS: networkRead() returned from connection.receive")
-            
-//            self.log?.debug("TransmissionMacOS: networkRead(size: \(size) returned from connection.receive with \(maybeData): \(maybeData?.hex)\n\n")
-            
+            print("\n\nTransmissionMacOS: networkRead() returned from connection.receive")
+                        
             guard maybeError == nil else
             {
                 print("TransmissionMacOS: networkRead received an error: \(maybeError!)")
-                self.log?.error("TransmissionMacOS: networkRead received an error: \(maybeError!)")
                 tcpReadLock.signal()
                 
                 return
