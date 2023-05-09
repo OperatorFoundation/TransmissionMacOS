@@ -68,7 +68,9 @@ public class TCPConnection: IPConnection
         {
             (maybeData, maybeContext, isComplete, maybeError) in
             
-            self.log?.debug("TransmissionMacOS: networkRead(size: \(size) returned from connection.receive with \(maybeData): \(maybeData?.hex)\n\n")
+            self.log?.debug("\n\nTransmissionMacOS: networkRead(size: \(size) returned from connection.receive")
+            
+//            self.log?.debug("TransmissionMacOS: networkRead(size: \(size) returned from connection.receive with \(maybeData): \(maybeData?.hex)\n\n")
             
             guard maybeError == nil else
             {
