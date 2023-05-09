@@ -62,18 +62,20 @@ public class TCPConnection: IPConnection
         var result: Data? = nil
         let tcpReadLock = DispatchSemaphore(value: 0)
         
-        print("\n\nTransmissionMacOS: networkRead(size: \(size) is calling connection.receive...")
+        print("\n\n📻 TransmissionMacOS: networkRead(size: \(size) is calling connection.receive... 📻")
         
         self.connection.receive(minimumIncompleteLength: 1, maximumLength: size)
         {
             (maybeData, maybeContext, isComplete, maybeError) in
+            
+            print("\n\n📻 TransmissionMacOS: networkRead() returned from connection.receive 📻")
             
             defer
             {
                 tcpReadLock.signal()
             }
             
-            print("\n\nTransmissionMacOS: networkRead() returned from connection.receive")
+            
                         
             guard maybeError == nil else
             {
@@ -89,12 +91,13 @@ public class TCPConnection: IPConnection
                 }
                 else
                 {
-                    self.log?.debug("Read request for size \(size), but we only received \(data.count) bytes.")
+                    print("📻 Read request for size \(size), but we only received \(data.count) bytes.")
                 }
             }
         }
         
         let timeoutPeriod = DispatchTime.now() + (Double(timeoutSeconds)/1e-9) // Converting timeoutSeconds to nanoseconds
+        print("⏰ TransmissionMacOS: networkRead starting timeout.")
         let tcpReadResultType = tcpReadLock.wait(timeout: timeoutPeriod)
         
         switch tcpReadResultType {
