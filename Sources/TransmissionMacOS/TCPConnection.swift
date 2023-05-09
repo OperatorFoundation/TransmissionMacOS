@@ -57,24 +57,27 @@ public class TCPConnection: IPConnection
         }
     }
 
-    public override func networkRead(size: Int) throws -> Data
+    public override func networkRead(size: Int, timeoutSeconds: Int = 10) throws -> Data
     {
-        var result: Data?
+        var result: Data? = nil
         let tcpReadLock = DispatchSemaphore(value: 0)
         
         print("\n\nTransmissionMacOS: networkRead(size: \(size) is calling connection.receive...")
         
-        self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
+        self.connection.receive(minimumIncompleteLength: 1, maximumLength: size)
         {
             (maybeData, maybeContext, isComplete, maybeError) in
+            
+            defer
+            {
+                tcpReadLock.signal()
+            }
             
             print("\n\nTransmissionMacOS: networkRead() returned from connection.receive")
                         
             guard maybeError == nil else
             {
-                print("TransmissionMacOS: networkRead received an error: \(maybeError!)")
-                tcpReadLock.signal()
-                
+                print("❗️ TransmissionMacOS: networkRead received an error: \(maybeError!)")
                 return
             }
 
@@ -87,14 +90,19 @@ public class TCPConnection: IPConnection
                 else
                 {
                     self.log?.debug("Read request for size \(size), but we only received \(data.count) bytes.")
-                    result = nil
                 }
             }
-            
-            tcpReadLock.signal()
         }
         
-        tcpReadLock.wait()
+        let timeoutPeriod = DispatchTime.now() + (Double(timeoutSeconds)/1e-9) // Converting timeoutSeconds to nanoseconds
+        let tcpReadResultType = tcpReadLock.wait(timeout: timeoutPeriod)
+        
+        switch tcpReadResultType {
+            case .success:
+                print("\n❗️ TransmissionMacOS: networkRead completed with result: \(result)\n")
+            case .timedOut:
+                print("\n❗️ TransmissionMacOS: networkRead timed out with result: \(result)\n")
+        }
 
         if let result
         {
