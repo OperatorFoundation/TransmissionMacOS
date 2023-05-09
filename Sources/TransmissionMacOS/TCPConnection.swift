@@ -96,15 +96,15 @@ public class TCPConnection: IPConnection
             }
         }
         
-        let timeoutPeriod = DispatchTime.now() + (Double(timeoutSeconds)/1e-9) // Converting timeoutSeconds to nanoseconds
-        print("⏰ TransmissionMacOS: networkRead starting timeout.")
+        let timeoutPeriod = DispatchTime.now() + .seconds(timeoutSeconds) // Converting timeoutSeconds to nanoseconds
+        print("\n\n⏰ TransmissionMacOS: networkRead starting timeout.")
         let tcpReadResultType = tcpReadLock.wait(timeout: timeoutPeriod)
         
         switch tcpReadResultType {
             case .success:
-                print("\n❗️ TransmissionMacOS: networkRead completed with result: \(result)\n")
+                print("\n⏰ TransmissionMacOS: networkRead completed with result: \(result)\n\n")
             case .timedOut:
-                print("\n❗️ TransmissionMacOS: networkRead timed out with result: \(result)\n")
+                print("\n⏰ TransmissionMacOS: networkRead timed out with result: \(result)\n\n")
         }
 
         if let result
