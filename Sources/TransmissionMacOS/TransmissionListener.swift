@@ -11,7 +11,7 @@ import Chord
 #if os(macOS)
 import os.log
 #else
-import Logger
+import Logging
 #endif
 import Net
 import TransmissionTypes
@@ -42,7 +42,7 @@ public class TransmissionListener: Listener
         self.listener.newConnectionHandler =
         {
             nwconnection in
-
+            
             let connection: TransmissionTypes.Connection
             switch type
             {

@@ -31,49 +31,41 @@ public class IPConnection: BaseConnection
     let log: Logger?
     let states: BlockingQueue<Bool> = BlockingQueue<Bool>()
     let startQueue = DispatchQueue(label: "TransmissionConnection")
-    let connectionType: ConnectionType
 
     var connection: NWConnection
     var connectionClosed = false
 
-    public init?(host: String, port: Int, using: ConnectionType = .tcp, logger: Logger? = nil)
+    public convenience init?(host: String, port: Int, using connectionType: ConnectionType = .tcp, logger: Logger? = nil)
     {
-        self.log = logger
-        self.connectionType = using
-
         let nwhost = NWEndpoint.Host(host)
         let port16 = UInt16(port)
         let nwport = NWEndpoint.Port(integerLiteral: port16)
 
         let nwconnection: NWConnection
-        switch using
+        switch connectionType
         {
             case .tcp:
                 nwconnection = NWConnection(host: nwhost, port: nwport, using: .tcp)
             case .udp:
                 nwconnection = NWConnection(host: nwhost, port: nwport, using: .udp)
         }
-        self.connection = nwconnection
-        self.connection.start(queue: startQueue)
-
-        let success = self.states.dequeue()
-        guard success else {return nil}
-
-        // FIXME
-        super.init(id: 0)
-
-        self.connection.stateUpdateHandler = self.handleState
+        
+        self.init(connection: nwconnection, logger: logger)
     }
 
-    public init?(connection: NWConnection, connectionType: ConnectionType, logger: Logger? = nil)
+    public init?(connection: NWConnection, logger: Logger? = nil)
     {
         self.connection = connection
         self.log = logger
-
-        self.connectionType = connectionType
-
-        // FIXME
-        super.init(id: 0, logger: logger)
+        
+        let newID = UUID()
+        super.init(id: newID.hashValue)
+        
+        self.connection.stateUpdateHandler = self.handleState
+        self.connection.start(queue: startQueue)
+        
+        let success = self.states.dequeue()
+        guard success else {return nil}
     }
 
     func handleState(state: NWConnection.State)

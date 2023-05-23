@@ -34,12 +34,12 @@ public class UDPConnection: IPConnection
 
         let nwconnection = NWConnection(host: nwhost, port: nwport, using: .udp)
 
-        super.init(connection: nwconnection, connectionType: .udp, logger: logger)
+        super.init(connection: nwconnection, logger: logger)
     }
 
-    public init?(connection: NWConnection, logger: Logger? = nil)
+    public override init?(connection: NWConnection, logger: Logger? = nil)
     {
-        super.init(connection: connection, connectionType: .udp, logger: logger)
+        super.init(connection: connection, logger: logger)
     }
 }
 
