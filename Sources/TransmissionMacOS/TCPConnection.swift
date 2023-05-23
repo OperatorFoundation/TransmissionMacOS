@@ -52,9 +52,11 @@ public class TCPConnection: IPConnection
         }
     }
 
-    public override func networkRead(size: Int) throws -> Data
+    public override func networkRead(size: Int, timeoutSeconds: Int) throws -> Data
     {
         var result: Data?
+
+        let lock: DispatchSemaphore = DispatchSemaphore(value: 0)
 
         self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
         {
@@ -63,6 +65,7 @@ public class TCPConnection: IPConnection
             guard maybeError == nil else
             {
                 print(maybeError!)
+                lock.signal()
                 return
             }
 
@@ -78,15 +81,26 @@ public class TCPConnection: IPConnection
                     result = nil
                 }
             }
+
+            lock.signal()
+            return
         }
 
-        if let result
+        let waitResult = lock.wait(timeout: DispatchTime.now().advanced(by: .seconds(timeoutSeconds)))
+        switch waitResult
         {
-            return result
-        }
-        else
-        {
-            throw TCPConnectionError.nilData
+            case .success:
+                if let result
+                {
+                    return result
+                }
+                else
+                {
+                    throw TCPConnectionError.nilData
+                }
+
+            case .timedOut:
+                throw TCPConnectionError.timeout
         }
     }
 
@@ -110,6 +124,7 @@ public enum TCPConnectionError: Error
 {
     case receiveError
     case nilData
+    case timeout
 }
 
 #endif
