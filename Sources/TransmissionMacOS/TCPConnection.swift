@@ -94,7 +94,7 @@ public class TCPConnection: IPConnection
         
         let start = DispatchTime.now()
         let timeoutTime = DispatchTimeInterval.seconds(timeoutSeconds) // Converting timeoutSeconds to nanoseconds
-        let timeoutPeriod = start + timeoutTime
+        let timeoutPeriod = start.advanced(by: timeoutTime)
         print("⏰ TransmissionMacOS: networkRead starting timeout. \nStart: \(start)\ntimeoutTime: \(timeoutTime)\ntimeoutPeriod: \(timeoutPeriod)\ndifference: \(timeoutPeriod.rawValue - start.rawValue)\nexpectedTimeoutSeconds: \(timeoutSeconds)")
         let tcpReadResultType = tcpReadLock.wait(timeout: timeoutPeriod)
         

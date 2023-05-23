@@ -99,4 +99,16 @@ final class TransmissionMacOSTests: XCTestCase
 
         lock.wait()
     }
+    
+    func testTimeout()
+    {
+        let timeoutSeconds = 60
+        let start = DispatchTime.now()
+        let timeoutInterval = DispatchTimeInterval.seconds(60)
+        let timeoutTime = start.advanced(by: timeoutInterval)
+        
+        let actualTimeoutInterval = start.distance(to: timeoutTime)
+        print("# Actual timeout interval: \(actualTimeoutInterval)")
+        XCTAssertEqual(actualTimeoutInterval, timeoutInterval)
+    }
 }
