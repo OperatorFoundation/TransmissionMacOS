@@ -93,16 +93,20 @@ public class TCPConnection: IPConnection
         }
         
         let start = DispatchTime.now()
-        let timeoutTime = DispatchTimeInterval.seconds(timeoutSeconds) // Converting timeoutSeconds to nanoseconds
-        let timeoutPeriod = start.advanced(by: timeoutTime)
-        print("⏰ TransmissionMacOS: networkRead starting timeout. \nStart: \(start)\ntimeoutTime: \(timeoutTime)\ntimeoutPeriod: \(timeoutPeriod)\ndifference: \(timeoutPeriod.rawValue - start.rawValue)\nexpectedTimeoutSeconds: \(timeoutSeconds)")
-        let tcpReadResultType = tcpReadLock.wait(timeout: timeoutPeriod)
+        let timeoutTimeInterval = DispatchTimeInterval.nanoseconds(timeoutSeconds * 1000000000) // Converting timeoutSeconds to nanoseconds
+        let expectedTimeoutTime = start.advanced(by: timeoutTimeInterval)
+        let expectedTimeoutTimeInterval = start.distance(to: expectedTimeoutTime)
+        
+        print("⏰ TransmissionMacOS: networkRead starting timeout. \nStart: \(start)\nrequested timeoutTimeInterval: \(timeoutTimeInterval)\ntimeoutPeriod: \(expectedTimeoutTime)\nexpectedTimeoutSeconds: \(timeoutSeconds)\nexpectedTimeoutTimeInterval: \(expectedTimeoutTimeInterval)")
+        
+        let tcpReadResultType = tcpReadLock.wait(timeout: expectedTimeoutTime)
         
         switch tcpReadResultType {
             case .success:
                 print("⏰ TransmissionMacOS: networkRead completed currentTime: \(DispatchTime.now()) startTime: \(start)  \nresult: \(result?.hex ?? "nil")\n\n")
             case .timedOut:
-                print("⏰ TransmissionMacOS: networkRead timed out currentTime: \(DispatchTime.now()) startTime: \(start)  \nresult: \(result?.hex ?? "nil")\n\n")
+                let currentTime = DispatchTime.now()
+                print("⏰ TransmissionMacOS: networkRead timed out \ncurrentTime: \(currentTime) \nstartTime: \(start)\ndifference: \(start.distance(to: currentTime))\n\n")
         }
 
         if let result
