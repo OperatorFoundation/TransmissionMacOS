@@ -21,7 +21,7 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/Chord", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Datable", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/SwiftHexTools", branch: "main"),
-        .package(url: "https://github.com/apple/swift-log", from: "1.4.2"),
+        .package(url: "https://github.com/apple/swift-log", from: "1.5.3"),
         .package(url: "https://github.com/OperatorFoundation/TransmissionBase", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/TransmissionTypes", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Transport", branch: "main"),
