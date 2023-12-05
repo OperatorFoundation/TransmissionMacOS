@@ -115,7 +115,7 @@ public class IPConnection: BaseConnection
         }
     }
 
-    public override func networkRead(size: Int, timeoutSeconds: Int) throws -> Data
+    public func networkRead(size: Int, timeoutSeconds: Int) throws -> Data
     {
         var result: Data?
 
