@@ -102,7 +102,7 @@ final class TransmissionMacOSTests: XCTestCase
     
     func testTimeout()
     {
-        let timeoutSeconds = 60
+//        let timeoutSeconds = 60
         let start = DispatchTime.now()
         let timeoutInterval = DispatchTimeInterval.seconds(60)
         let timeoutTime = start.advanced(by: timeoutInterval)
