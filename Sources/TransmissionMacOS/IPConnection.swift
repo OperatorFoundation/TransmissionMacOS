@@ -115,56 +115,40 @@ public class IPConnection: BaseConnection
         }
     }
 
-    public func networkRead(size: Int, timeoutSeconds: Int) throws -> Data
+    public override func networkRead(size: Int) throws -> Data
     {
-        var result: Data?
-
-        let lock: DispatchSemaphore = DispatchSemaphore(value: 0)
-
-        self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
+        let result: Result<Data, Error> = Synchronizer.sync
         {
-            (maybeData, maybeContext, isComplete, maybeError) in
+            callback in
 
-            guard maybeError == nil else
+            self.connection.receive(minimumIncompleteLength: size, maximumLength: size)
             {
-                print(maybeError!)
-                lock.signal()
-                return
-            }
+                content, contentContext, isComplete, maybeError in
 
-            if let data = maybeData
-            {
-                if data.count == size
+                if let error = maybeError
                 {
-                    result = data
+                    callback(.failure(error))
+                }
+                else if let data = content
+                {
+                    callback(.success(data))
                 }
                 else
                 {
-                    self.log?.debug("Read request for size \(size), but we only received \(data.count) bytes.")
-                    result = nil
+                    callback(.failure(TCPConnectionError.nilData))
                 }
             }
-
-            lock.signal()
-            return
         }
 
-        let waitResult = lock.wait(timeout: DispatchTime.now().advanced(by: .seconds(timeoutSeconds)))
-        switch waitResult
+        switch result
         {
-            case .success:
-                if let result
-                {
-                    return result
-                }
-                else
-                {
-                    throw TCPConnectionError.nilData
-                }
+            case .success(let success):
+                return success
 
-            case .timedOut:
-                throw TCPConnectionError.timeout
-        }    }
+            case .failure(let failure):
+                throw failure
+        }
+    }
 
     public override func networkWrite(data: Data) throws
     {

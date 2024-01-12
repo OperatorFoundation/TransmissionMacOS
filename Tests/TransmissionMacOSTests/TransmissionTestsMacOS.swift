@@ -111,4 +111,29 @@ final class TransmissionMacOSTests: XCTestCase
         print("# Actual timeout interval: \(actualTimeoutInterval)")
         XCTAssertEqual(actualTimeoutInterval, timeoutInterval)
     }
+
+    func testReadAndWriteSimultaneous()
+    {
+        guard let connection = TCPConnection(host: "127.0.0.1", port: 1234) else
+        {
+            XCTFail()
+            return
+        }
+
+        Task
+        {
+            while true
+            {
+                if let data = connection.read(size: 4)
+                {
+                    print(data)
+                }
+            }
+        }
+
+        Task
+        {
+            connection.write(string: "asdf")
+        }
+    }
 }
